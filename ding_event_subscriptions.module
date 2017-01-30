@@ -87,7 +87,7 @@ function ding_event_subscriptions_generate_url() {
     if (!empty($os) && in_array($os, array('Mac', 'iOS'))) {
       $url = 'webcal://' . $_SERVER['SERVER_NAME'] . '/ding-event-subscriptions/download-ics';
       if (!empty($conditions)) {
-        array_walk($conditions, function(&$i, $k) {
+        array_walk($conditions, function (&$i, $k) {
           $i = "{$k}={$i}";
         });
 
@@ -174,7 +174,13 @@ function theme_ding_event_subscriptions_ics(&$variables) {
     else {
       $teaser = '';
     }
-    $body = drupal_html_to_text("{$teaser} {$body}");
+
+    // URL processing.
+    $url = url("node/{$event->nid}", array(
+      'absolute' => TRUE,
+    ));
+
+    $body = drupal_html_to_text("{$url} {$teaser} {$body}");
 
     // Price processing.
     $price = field_get_items('node', $event, 'field_ding_event_price');
@@ -203,11 +209,6 @@ function theme_ding_event_subscriptions_ics(&$variables) {
 
     // UID processing.
     $uid = uniqid();
-
-    // URL processing.
-    $url = url("node/{$event->nid}", array(
-      'absolute' => TRUE,
-    ));
 
     $output .= ding_event_subscriptions_line('BEGIN', 'VEVENT', FALSE);
     $output .= ding_event_subscriptions_line('UID', $uid, FALSE);
@@ -297,7 +298,7 @@ function ding_event_subscriptions_extra_callback($entity) {
   $reference = ding_event_subscriptions_generate_url();
   if (in_array($os, array('iOS', 'Mac'))) {
     $output = array(
-      '#markup' => l(t('Subscribe'), $reference, array(
+      '#markup' => l(t('Add event to calendar'), $reference, array(
         'attributes' => array(
           'class' => array('ding-event-subscriptions'),
         ),
@@ -309,7 +310,7 @@ function ding_event_subscriptions_extra_callback($entity) {
   }
   else {
     $output = array(
-      '#markup' => l(t('Subscribe'), '#', array(
+      '#markup' => l(t('Add event to calendar'), '#', array(
         'attributes' => array(
           'class' => array('ding-event-subscriptions'),
           'data-reference' => $reference,
