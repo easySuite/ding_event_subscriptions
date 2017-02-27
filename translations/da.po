@@ -1,0 +1,60 @@
+# $Id$
+# Generated from files:
+#  ding_event_subscriptions.module: n/a
+#  plugins/content_types/des_subscribe.inc: n/a
+#  ding_event_subscriptions.info: n/a
+#  js/ding_event_subscriptions.js: n/a
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2017-02-27 14:16+0100\n"
+"PO-Revision-Date: 2017-02-27 14:16+0100\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: Danish <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+
+#: ding_event_subscriptions.module:163
+msgid "Library calendar"
+msgstr ""
+
+#: ding_event_subscriptions.module:334 plugins/content_types/des_subscribe.inc:29;41
+msgid "Subscribe"
+msgstr "Abonnér på kalender"
+
+#: ding_event_subscriptions.module:335
+msgid "Represents subscribe link."
+msgstr ""
+
+#: ding_event_subscriptions.module:354
+msgid "Add event to calendar"
+msgstr "Tilføj til kalender"
+
+#: ding_event_subscriptions.info:0
+msgid "Ding event subscriptions"
+msgstr ""
+
+#: ding_event_subscriptions.info:0
+msgid "Allow subscrubing to events and provides feeds in ICS format."
+msgstr ""
+
+#: ding_event_subscriptions.info:0 plugins/content_types/des_subscribe.inc:11
+msgid "Ding!"
+msgstr "Ding!"
+
+#: js/ding_event_subscriptions.js:0
+msgid "Link was copied to clipboard"
+msgstr ""
+
+#: plugins/content_types/des_subscribe.inc:9
+msgid "Subscribe to events button"
+msgstr ""
+
+#: plugins/content_types/des_subscribe.inc:10
+msgid "Represents a button for getting ICS file."
+msgstr ""
+
