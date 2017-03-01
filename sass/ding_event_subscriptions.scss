@@ -1,3 +1,4 @@
+@import "_mixins";
 /* FontAwesome
    ========================================================================== */
 
@@ -17,10 +18,15 @@ $fontAwesomePath:   "../font" !default;
   content: "\f019";
   display: inline-block;
   font-family: FontAwesome;
-  padding-right: 10px;
-  padding-left: 15px;
+  padding: 10px;
   color: #4f4f4f;
   border-left: 5px solid #efefef;
+}
+
+@include small-medium() {
+  div.event-info {
+    background-color: #efefef;
+  }
 }
 
 .page-arrangementer .ding-event-subscriptions:before,
