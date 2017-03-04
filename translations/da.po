@@ -58,3 +58,8 @@ msgstr ""
 msgid "Represents a button for getting ICS file."
 msgstr ""
 
+msgid "Free"
+msgstr "Gratis"
+
+msgid "Price: @unformatted_price Kr"
+msgstr "Pris: @unformatted_price Kr"

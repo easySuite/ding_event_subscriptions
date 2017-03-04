@@ -187,17 +187,24 @@ function theme_ding_event_subscriptions_ics(&$variables) {
       'absolute' => TRUE,
     ));
 
-    $teaser = preg_replace( "/\r|\n/", "", $teaser);
-    $body = preg_replace( "/\r|\n/", "", drupal_html_to_text($body));
+    $teaser = preg_replace("/\r|\n/", "", $teaser);
+    $body = preg_replace("/\r|\n/", "", drupal_html_to_text($body));
+
+    // Price processing.
+    $unformatted_price = field_get_items('node', $event, 'field_ding_event_price');
+    $unformatted_price = !empty($unformatted_price[0]['value']) ? $unformatted_price[0]['value'] : '';
+    if (!empty($unformatted_price)) {
+      $price = t('Price: @unformatted_price Kr', array('@unformatted_price' => $unformatted_price));
+    }
+    else {
+      $price = t('Free');
+    }
 
     $full_description = '';
     $full_description .= $url . "\\n\\n";
+    $full_description .= $price . "\\n\\n";
     $full_description .= $teaser . "\\n\\n";
     $full_description .= $body;
-
-    // Price processing.
-    $price = field_get_items('node', $event, 'field_ding_event_price');
-    $price = !empty($price[0]['value']) ? $price[0]['value'] : '';
 
     // Dates processing.
     $date = field_get_items('node', $event, 'field_ding_event_date');
