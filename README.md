@@ -9,5 +9,5 @@ No special requirements.
 
 #Configuration:
 Module should add "subscribe" button automatically to events list pages,
-bout it could be, that existing pages will change machine name,
+but it could be, that existing pages will change machine name,
 if so you can add 'Subscribe to events button' plugin manually to event pages. 
