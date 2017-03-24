@@ -269,7 +269,7 @@ function theme_ding_event_subscriptions_ics(&$variables) {
       );
     }
 
-    $location = implode('; ', $location);
+    $location = implode(', ', array_filter($location));
 
     // UID processing.
     $uid = uniqid();
