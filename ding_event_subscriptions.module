@@ -37,7 +37,11 @@ function ding_event_subscriptions_menu() {
 function ding_event_subscriptions_theme($existing, $type, $theme, $path) {
   return array(
     'ding_event_subscriptions_ics' => array(
-      'variables' => array('events' => NULL),
+      'variables' => array(
+        'events' => NULL,
+        'library' => NULL,
+        'category' => NULL,
+      ),
     ),
   );
 }
@@ -153,14 +157,35 @@ function ding_event_subscriptions_get_events(array $conditions = array()) {
  */
 function theme_ding_event_subscriptions_ics(&$variables) {
   $output = '';
+  $site_name = variable_get('site_name');
+  $cal_title = $site_name;
   $events = $variables['events'];
+
+  // Getting library title.
+  if (!empty($variables['library'])) {
+    $lib_node = node_load($variables['library']);
+    $cal_title .= ' ' . $lib_node->title;
+  }
+
+  // Getting category.
+  if (!empty($variables['category'])) {
+    $term = taxonomy_term_load($variables['category']);
+    $cal_title .= ' ' . $term->name;
+  }
+
+  // Getting event subscription list title for all events.
+  if (empty($variables['library']) && empty($variables['category'])) {
+    $cal_title = t('@site_name Events', array('@site_name' => $site_name));
+  }
+
   $output .= ding_event_subscriptions_line('BEGIN', 'VCALENDAR', FALSE);
   $output .= ding_event_subscriptions_line('PRODID', '-//EasySuite//DK', FALSE);
   $output .= ding_event_subscriptions_line('VERSION', '2.0', FALSE);
   $output .= ding_event_subscriptions_line('METHOD', 'PUBLISH', FALSE);
   $output .= ding_event_subscriptions_line('X-MS-OLK-FORCEINSPECTOROPEN', 'TRUE', FALSE);
+
   if (count($events) != 1) {
-    $output .= ding_event_subscriptions_line('X-WR-CALNAME', t('Library calendar'), FALSE);
+    $output .= ding_event_subscriptions_line('X-WR-CALNAME', $cal_title, FALSE);
   }
   $output .= ding_event_subscriptions_line('CALSCALE', 'GREGORIAN', FALSE);
   foreach ($events as $event) {
