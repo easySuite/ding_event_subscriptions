@@ -37,7 +37,11 @@ function ding_event_subscriptions_menu() {
 function ding_event_subscriptions_theme($existing, $type, $theme, $path) {
   return array(
     'ding_event_subscriptions_ics' => array(
-      'variables' => array('events' => NULL),
+      'variables' => array(
+        'events' => NULL,
+        'library' => NULL,
+        'category' => NULL,
+      ),
     ),
   );
 }
@@ -80,14 +84,16 @@ function ding_event_subscriptions_generate_url() {
         $conditions['category'] = $term->tid;
         break;
     }
+
     $url = url('ding-event-subscriptions/download-ics', array(
       'query' => $conditions,
     ));
+
     $os = ding_event_subscriptions_get_os();
-    if (!empty($os) && in_array($os, array('Mac', 'iOS'))) {
+    if (!empty($os) && in_array($os, array('Mac', 'iOS')) && !isset($conditions['event'])) {
       $url = 'webcal://' . $_SERVER['SERVER_NAME'] . '/ding-event-subscriptions/download-ics';
       if (!empty($conditions)) {
-        array_walk($conditions, function(&$i, $k) {
+        array_walk($conditions, function (&$i, $k) {
           $i = "{$k}={$i}";
         });
 
@@ -151,13 +157,39 @@ function ding_event_subscriptions_get_events(array $conditions = array()) {
  */
 function theme_ding_event_subscriptions_ics(&$variables) {
   $output = '';
+  $site_name = variable_get('site_name');
+  $cal_title = $site_name;
   $events = $variables['events'];
+
+  // Getting library title.
+  if (!empty($variables['library'])) {
+    $lib_node = node_load($variables['library']);
+    $cal_title .= ' ' . $lib_node->title;
+  }
+
+  // Getting category.
+  if (!empty($variables['category'])) {
+    $term = taxonomy_term_load($variables['category']);
+    $cal_title .= ' ' . $term->name;
+  }
+
+  // Getting event subscription list title for all events.
+  if (empty($variables['library']) && empty($variables['category'])) {
+    $cal_title = t('@site_name Events', array('@site_name' => $site_name));
+  }
+
   $output .= ding_event_subscriptions_line('BEGIN', 'VCALENDAR', FALSE);
   $output .= ding_event_subscriptions_line('PRODID', '-//EasySuite//DK', FALSE);
   $output .= ding_event_subscriptions_line('VERSION', '2.0', FALSE);
+  $output .= ding_event_subscriptions_line('METHOD', 'PUBLISH', FALSE);
+  $output .= ding_event_subscriptions_line('X-MS-OLK-FORCEINSPECTOROPEN', 'TRUE', FALSE);
+
+  if (count($events) != 1) {
+    $output .= ding_event_subscriptions_line('X-WR-CALNAME', $cal_title, FALSE);
+  }
   $output .= ding_event_subscriptions_line('CALSCALE', 'GREGORIAN', FALSE);
   foreach ($events as $event) {
-    // Body/description processing.
+    // Preparing note content for event.
     $body = field_get_items('node', $event, 'field_ding_event_body');
     if (isset($body[0])) {
       $body = field_view_value('node', $event, 'field_ding_event_body', $body[0]);
@@ -166,6 +198,7 @@ function theme_ding_event_subscriptions_ics(&$variables) {
     else {
       $body = '';
     }
+
     $teaser = field_get_items('node', $event, 'field_ding_event_lead');
     if (isset($teaser[0])) {
       $teaser = field_view_value('node', $event, 'field_ding_event_lead', $teaser[0]);
@@ -174,11 +207,34 @@ function theme_ding_event_subscriptions_ics(&$variables) {
     else {
       $teaser = '';
     }
-    $body = drupal_html_to_text("{$teaser} {$body}");
+
+    $url = url("node/{$event->nid}", array(
+      'absolute' => TRUE,
+    ));
+
+    $teaser = preg_replace("/\r|\n/", "", $teaser);
+
+    // "Hard" processing of body field value :/.
+    $body = preg_replace("/\r|\n/", "", $body);
+    $body = preg_replace("/<p[^>]*?>|<div[^>]*?>/", "", $body);
+    $body = preg_replace("/<\\/p>|<\\/div>/", "\\n", $body);
+    $body = strip_tags($body);
 
     // Price processing.
-    $price = field_get_items('node', $event, 'field_ding_event_price');
-    $price = !empty($price[0]['value']) ? $price[0]['value'] : '';
+    $unformatted_price = field_get_items('node', $event, 'field_ding_event_price');
+    $unformatted_price = !empty($unformatted_price[0]['value']) ? $unformatted_price[0]['value'] : '';
+    if (!empty($unformatted_price)) {
+      $price = t('Price: @unformatted_price Kr', array('@unformatted_price' => $unformatted_price));
+    }
+    else {
+      $price = t('Free');
+    }
+
+    $full_description = '';
+    $full_description .= $url . "\\n\\n";
+    $full_description .= $price . "\\n\\n";
+    $full_description .= $teaser . "\\n\\n";
+    $full_description .= $body;
 
     // Dates processing.
     $date = field_get_items('node', $event, 'field_ding_event_date');
@@ -192,33 +248,69 @@ function theme_ding_event_subscriptions_ics(&$variables) {
     $now->setTimezone($timezone);
 
     // Location processing.
-    $location = field_get_items('node', $event, 'field_ding_event_location');
-    $target = array(
-      'name_line' => NULL,
-      'thoroughfare' => NULL,
-      'locality' => NULL,
-      'postal_code' => NULL,
-    );
-    $location = implode('; ', array_intersect_key($location[0], $target));
+    $event_location = field_get_items('node', $event, 'field_ding_event_location');
+
+    if (empty($event_location[0]['name_line'])) {
+      $lib_ref = field_get_items('node', $event, 'og_group_ref');
+      if (!empty($lib_ref)) {
+        $library = node_load($lib_ref[0]['target_id']);
+
+        $lib_contacts = field_get_items('node', $library, 'field_ding_library_addresse');
+
+        $location = array(
+          'name_line' => $library->title,
+          'thoroughfare' => $lib_contacts[0]['thoroughfare'],
+          'premise' => $lib_contacts[0]['premise'],
+          'postal_code_locality' => $lib_contacts[0]['postal_code'] . ' ' . $lib_contacts[0]['locality'],
+        );
+      }
+    }
+    else {
+      $location = array(
+        'name_line' => $event_location[0]['name_line'],
+        'thoroughfare' => $event_location[0]['thoroughfare'],
+        'premise' => $event_location[0]['premise'],
+        'postal_code_locality' => $event_location[0]['postal_code'] . ' ' . $event_location[0]['locality'],
+      );
+    }
+
+    $location = implode(', ', array_filter($location));
 
     // UID processing.
     $uid = uniqid();
 
-    // URL processing.
-    $url = url("node/{$event->nid}", array(
-      'absolute' => TRUE,
-    ));
+    // Preparing CREATED tag content.
+    $created = new DateTime();
+    $created->setTimestamp($event->created);
+    $created = $created->format('Ymd\THis');
+
+    // Preparing LAST-MODIFIED tag content.
+    $updated = new DateTime();
+    $updated->setTimestamp($event->changed);
+    $updated = $updated->format('Ymd\THis');
 
     $output .= ding_event_subscriptions_line('BEGIN', 'VEVENT', FALSE);
+    $output .= ding_event_subscriptions_line('CREATED', $created, FALSE);
+    $output .= ding_event_subscriptions_line('LAST-MODIFIED', $updated, FALSE);
+    $output .= ding_event_subscriptions_line('CLASS', 'PUBLIC', FALSE);
     $output .= ding_event_subscriptions_line('UID', $uid, FALSE);
     $output .= ding_event_subscriptions_line('SUMMARY', $event->title);
-    $output .= ding_event_subscriptions_line('DESCRIPTION', $body);
+    $output .= ding_event_subscriptions_line('DESCRIPTION', $full_description, TRUE);
     $output .= ding_event_subscriptions_line('URL', $url, FALSE);
     $output .= ding_event_subscriptions_line('PRICE', $price);
     $output .= ding_event_subscriptions_line('DTSTART', $start->format('Ymd\THis'), FALSE);
     $output .= ding_event_subscriptions_line('DTEND', $end->format('Ymd\THis'), FALSE);
     $output .= ding_event_subscriptions_line('DTSTAMP', $now->format('Ymd\THis'), FALSE);
     $output .= ding_event_subscriptions_line('LOCATION', $location);
+    $output .= ding_event_subscriptions_line('X-MICROSOFT-CDO-BUSYSTATUS', 'BUSY');
+    $output .= ding_event_subscriptions_line('X-MICROSOFT-CDO-IMPORTANCE', '1');
+    $output .= ding_event_subscriptions_line('X-MICROSOFT-DISALLOW-COUNTER', 'FALSE');
+    $output .= ding_event_subscriptions_line('X-MS-OLK-ALLOWEXTERNCHECK', 'TRUE');
+    $output .= ding_event_subscriptions_line('X-MS-OLK-AUTOFILLLOCATION', 'FALSE');
+    $output .= ding_event_subscriptions_line('X-MS-OLK-CONFTYPE', '0');
+    $output .= ding_event_subscriptions_line('TRANSP', 'OPAQUE');
+    $output .= ding_event_subscriptions_line('PRIORITY', '5');
+    $output .= ding_event_subscriptions_line('SEQUENCE', '0');
     $output .= ding_event_subscriptions_line('END', 'VEVENT');
   }
   $output .= ding_event_subscriptions_line('END', 'VCALENDAR');
@@ -295,33 +387,19 @@ function ding_event_subscriptions_extra_callback($entity) {
   $path = drupal_get_path('module', 'ding_event_subscriptions');
   $os = ding_event_subscriptions_get_os();
   $reference = ding_event_subscriptions_generate_url();
-  if (in_array($os, array('iOS', 'Mac'))) {
-    $output = array(
-      '#markup' => l(t('Subscribe'), $reference, array(
-        'attributes' => array(
-          'class' => array('ding-event-subscriptions'),
-        ),
-      )),
-      '#attached' => array(
-        'css' => array($path . '/css/ding_event_subscriptions.css'),
+  $output = array(
+    '#markup' => l(t('Add event to calendar'), '#', array(
+      'attributes' => array(
+        'class' => array('ding-event-subscriptions'),
+        'data-reference' => $reference,
+        'data-domain' => $base_url,
       ),
-    );
-  }
-  else {
-    $output = array(
-      '#markup' => l(t('Subscribe'), '#', array(
-        'attributes' => array(
-          'class' => array('ding-event-subscriptions'),
-          'data-reference' => $reference,
-          'data-domain' => $base_url,
-        ),
-      )),
-      '#attached' => array(
-        'js' => array($path . '/js/ding_event_subscriptions.js'),
-        'css' => array($path . '/css/ding_event_subscriptions.css'),
-      ),
-    );
-  }
+    )),
+    '#attached' => array(
+      'js' => array($path . '/js/ding_event_subscriptions.js'),
+      'css' => array($path . '/css/ding_event_subscriptions.css'),
+    ),
+  );
   return $output;
 }
 
