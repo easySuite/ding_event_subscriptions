@@ -28,25 +28,15 @@
   font-weight: normal;
   font-style: normal;
 }
-.node-type-ding-event .ding-event-subscriptions:before {
-  content: "\f019";
-  display: inline-block;
-  font-family: FontAwesome;
-  padding: 10px;
-  color: #4f4f4f;
-  border-left: 5px solid #efefef;
-}
-
 @media only screen and (max-width: 768px) {
   div.event-info {
     background-color: #efefef;
   }
 }
-.page-arrangementer .ding-event-subscriptions:before,
-.page-taxonomy-term .ding-event-subscriptions:before {
-  content: "\f09e";
+.pane-des-subscribe {
+  background: #e5e5e5;
+  width: 100%;
+  margin-bottom: 15px;
   display: inline-block;
-  font-family: FontAwesome;
-  padding-right: 10px;
-  color: #4f4f4f;
+  padding: 10px;
 }

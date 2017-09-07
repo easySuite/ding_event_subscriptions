@@ -4,7 +4,7 @@
  * @file
  * Represents hook definitions and common functions.
  */
-
+include_once 'ding_event_subscriptions.features.inc';
 require_once 'ding_event_subscriptions.pages.inc';
 
 /**
@@ -42,6 +42,13 @@ function ding_event_subscriptions_theme($existing, $type, $theme, $path) {
         'library' => NULL,
         'category' => NULL,
       ),
+    ),
+    'subscription_field' => array(
+      'variables' => array(
+        'label' => NULL,
+        'link' => NULL,
+      ),
+      'template' => 'templates/subscription-field',
     ),
   );
 }
@@ -382,24 +389,34 @@ function ding_event_subscriptions_field_extra_fields() {
 /**
  * Helper function for getting markup of extra field.
  */
-function ding_event_subscriptions_extra_callback($entity) {
+function ding_event_subscriptions_extra_callback(&$entity) {
   global $base_url;
   $path = drupal_get_path('module', 'ding_event_subscriptions');
   $os = ding_event_subscriptions_get_os();
   $reference = ding_event_subscriptions_generate_url();
-  $output = array(
-    '#markup' => l(t('Add event to calendar'), '#', array(
-      'attributes' => array(
-        'class' => array('ding-event-subscriptions'),
+  $extra_fields = field_info_extra_fields('node', 'ding_event', 'display');
+
+  $label = t('@label', ['@label' => $extra_fields['field_ding_event_subscriptions']['label']]);
+  $link = [
+    '#markup' => l(t('Add event to calendar'), '#', [
+      'attributes' => [
+        'class' => ['ding-event-subscriptions'],
         'data-reference' => $reference,
         'data-domain' => $base_url,
-      ),
-    )),
-    '#attached' => array(
-      'js' => array($path . '/js/ding_event_subscriptions.js'),
-      'css' => array($path . '/css/ding_event_subscriptions.css'),
-    ),
-  );
+      ],
+    ]),
+    '#attached' => [
+      'js' => [$path . '/js/ding_event_subscriptions.js'],
+      'css' => [$path . '/css/ding_event_subscriptions.css'],
+    ],
+  ];
+
+  $output = [
+    '#theme' => 'subscription_field',
+    '#label' => $label,
+    '#link' => $link,
+  ];
+
   return $output;
 }
 
