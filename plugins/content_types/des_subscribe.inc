@@ -26,7 +26,7 @@ function ding_event_subscriptions_subscribe_pane_render() {
   $reference = ding_event_subscriptions_generate_url();
   if (in_array($os, array('iOS', 'Mac'))) {
     $block->content = array(
-      '#markup' => l(t('Subscribe'), $reference, array(
+      '#markup' => l(t('Download this calendar for mobile or PC'), $reference, array(
         'attributes' => array(
           'class' => array('ding-event-subscriptions'),
         ),
@@ -38,7 +38,7 @@ function ding_event_subscriptions_subscribe_pane_render() {
   }
   else {
     $block->content = array(
-      '#markup' => l(t('Subscribe'), '#', array(
+      '#markup' => l(t('Download this calendar for mobile or PC'), '#', array(
         'attributes' => array(
           'class' => array('ding-event-subscriptions'),
           'data-reference' => $reference,

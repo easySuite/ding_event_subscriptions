@@ -35,20 +35,20 @@ function ding_event_subscriptions_add_panes() {
       'name' => 'node_view_panel_context_3',
       'subtask' => '',
       'position' => 2,
-      'region' => 'main_content',
+      'region' => 'attachment_1_1',
     ),
     array(
       'task' => page_manager_get_task('page'),
       'name' => 'page_ding_events_panel_context',
       'subtask' => 'ding_events',
-      'position' => 2,
+      'position' => 0,
       'region' => 'main_content',
     ),
     array(
       'task' => page_manager_get_task('page'),
       'name' => 'page_ding_events_library_panel_context',
       'subtask' => 'ding_events_library',
-      'position' => 2,
+      'position' => 1,
       'region' => 'main_content',
     ),
   );
@@ -61,7 +61,7 @@ function ding_event_subscriptions_add_panes() {
 
     $pane = new stdClass();
     $pane->pid = 'new-05a7891f-60a5-4df6-9537-ac832dd3fdbd';
-    $pane->panel = 'main_content';
+    $pane->panel = $setting['region'];
     $pane->type = 'des_subscribe';
     $pane->subtype = 'des_subscribe';
     $pane->shown = TRUE;
@@ -77,9 +77,9 @@ function ding_event_subscriptions_add_panes() {
     $pane->locks = array();
     $pane->uuid = '05a7891f-60a5-4df6-9537-ac832dd3fdbd';
     $display->content['new-05a7891f-60a5-4df6-9537-ac832dd3fdbd'] = $pane;
-    $original = $display->panels['main_content'];
+    $original = $display->panels[$setting['region']];
     array_splice($original, $setting['position'], 0, 'new-05a7891f-60a5-4df6-9537-ac832dd3fdbd');
-    $display->panels['main_content'] = $original;
+    $display->panels[$setting['region']] = $original;
     $display->hide_title = PANELS_TITLE_PANE;
     $display->title_pane = '0';
     $handler->conf['display'] = $display;
@@ -104,20 +104,20 @@ function ding_event_subscriptions_remove_panes() {
       'name' => 'node_view_panel_context_3',
       'subtask' => '',
       'position' => 2,
-      'region' => 'main_content',
+      'region' => 'attachment_1_1',
     ),
     array(
       'task' => page_manager_get_task('page'),
       'name' => 'page_ding_events_panel_context',
       'subtask' => 'ding_events',
-      'position' => 2,
+      'position' => 0,
       'region' => 'main_content',
     ),
     array(
       'task' => page_manager_get_task('page'),
       'name' => 'page_ding_events_library_panel_context',
       'subtask' => 'ding_events_library',
-      'position' => 2,
+      'position' => 1,
       'region' => 'main_content',
     ),
   );
@@ -130,7 +130,7 @@ function ding_event_subscriptions_remove_panes() {
     $display->content = array_filter($display->content, function ($i) {
       return $i->type != 'des_subscribe';
     });
-    unset($display->panels['main_content'][$setting['position']]);
+    unset($display->panels[$setting['region']][$setting['position']]);
     $handler->conf['display'] = $display;
     page_manager_save_task_handler($handler);
   }
