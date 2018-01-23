@@ -19,34 +19,15 @@
  *
  * Usage example: pseudo-arrow(10px, #000, top, center, $offset: 20px)
    ========================================================================== */
-/* FontAwesome
-   ========================================================================== */
-@font-face {
-  font-family: 'FontAwesome';
-  src: url("../font/fontawesome-webfont.eot?v=3.0.1");
-  src: url("../font/fontawesome-webfont.eot?#iefix&v=3.0.1") format("embedded-opentype"), url("../font/fontawesome-webfont.woff?v=3.0.1") format("woff"), url("../font/fontawesome-webfont.ttf?v=3.0.1") format("truetype");
-  font-weight: normal;
-  font-style: normal;
-}
-.node-type-ding-event .ding-event-subscriptions:before {
-  content: "\f019";
-  display: inline-block;
-  font-family: FontAwesome;
-  padding: 10px;
-  color: #4f4f4f;
-  border-left: 5px solid #efefef;
-}
-
 @media only screen and (max-width: 768px) {
   div.event-info {
     background-color: #efefef;
   }
 }
-.page-arrangementer .ding-event-subscriptions:before,
-.page-taxonomy-term .ding-event-subscriptions:before {
-  content: "\f09e";
+.pane-des-subscribe {
+  background: #e5e5e5;
+  width: 100%;
+  margin-bottom: 15px;
   display: inline-block;
-  font-family: FontAwesome;
-  padding-right: 10px;
-  color: #4f4f4f;
+  padding: 10px;
 }
