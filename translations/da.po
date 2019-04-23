@@ -61,8 +61,8 @@ msgstr ""
 msgid "Free"
 msgstr "Gratis"
 
-msgid "Price: @unformatted_price Kr"
-msgstr "Pris: @unformatted_price Kr"
+msgid "Price: @unformatted_price kr."
+msgstr "Pris: @unformatted_price kr."
 
 msgid "@site_name Events"
 msgstr "@site_name Arrangementer"
