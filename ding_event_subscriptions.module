@@ -231,7 +231,7 @@ function theme_ding_event_subscriptions_ics(&$variables) {
     $unformatted_price = field_get_items('node', $event, 'field_ding_event_price');
     $unformatted_price = !empty($unformatted_price[0]['value']) ? $unformatted_price[0]['value'] : '';
     if (!empty($unformatted_price)) {
-      $price = t('Price: @unformatted_price Kr', array('@unformatted_price' => $unformatted_price));
+      $price = t('Price: @unformatted_price kr.', array('@unformatted_price' => $unformatted_price));
     }
     else {
       $price = t('Free');
